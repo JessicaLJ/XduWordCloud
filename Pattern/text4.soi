@@ -1,0 +1,3 @@
+(S(NP(PRP))(VP(NP(DT)(JJ)(NN)))(.))
+  (S (NP (PRP I)) (VP (VBP am) (NP (DT a) (JJ good) (NN boy))) (. .))
+  (S     (NP (PRP She))     (VP (VBZ is) (NP (DT a) (JJ beautiful) (NN girl)))     (. .))

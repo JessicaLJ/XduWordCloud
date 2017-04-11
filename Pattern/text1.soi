@@ -1,0 +1,4 @@
+(S(NP(PRP$)(NN))(VP(VBZ)(NP(NNP)))(.))
+  (S (NP (PRP$ My) (NN name)) (VP (VBZ is) (NP (NNP Jack))) (. .))
+  (S (NP (PRP$ Her) (NN name)) (VP (VBZ is) (NP (NNP Mary))) (. .))
+  (S (NP (PRP$ My) (NN name)) (VP (VBZ is) (NP (NNP Monica))) (. .))

@@ -1,0 +1,4 @@
+(SBARQ(WHNP(WP))(SQ(VBP)(NP(PRP))(VP(VBG)))(.))
+  (SBARQ     (WHNP (WP What))     (SQ (VBP are) (NP (PRP you)) (VP (VBG doing)))     (. ?))
+  (SBARQ     (WHNP (WP What))     (SQ (VBP are) (NP (PRP you)) (VP (VBG doing)))     (. ?))
+  (SBARQ     (WHNP (WP what))     (SQ (VBP are) (NP (PRP you)) (VP (VBG doing)))     (. ?))
