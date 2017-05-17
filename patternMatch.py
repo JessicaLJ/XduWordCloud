@@ -1,16 +1,17 @@
+# -*- coding:UTF-8 -*-
 import os
 import nltk
 from nltk.tree import Tree
 from nltk.parse import stanford
-import queue
 import func
 import sys
-
+import json
+import io
+#sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf8')
 parser = stanford.StanfordParser(model_path = './englishPCFG.ser.gz')
-#'E:/stanford-parser-full-2016-10-31/edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz')
-
 
 class singleFileParten:
+	''' 将单个文件中的模式去重 '''
 	def __init__(self,file,yz=0.05):
 		self.file = file
 		self.score = 0
@@ -19,6 +20,7 @@ class singleFileParten:
 		self.wj = []
 		self.pattern = self.__getSingleFilePattern()
 	def __convertTree(self,sent):
+		#print(sent)
 		tree = parser.parse(nltk.word_tokenize(sent))
 		return tree
 	def __toWenJian(self,tree):
@@ -36,15 +38,14 @@ class singleFileParten:
 			if mark[i] == 0:
 				for j in range(i+1,len(trees)):
 					if mark[j] == 0:
-						
-						#hasn't in
 						self.socre = 0
-						l1 = len(list(trees[i].subtrees()))
-						l2 = len(list(trees[i].subtrees()))
+						treei = trees[i]
+						treej = trees[j]
+						l1 = len(list(treei.subtrees()))
+						l2 = len(list(treej.subtrees()))
 						self.fenmu = (l1 if l1 > l2 else l2) -1
-						mt = matchTree(trees[i],trees[j],self.fenmu)
+						mt = matchTree(treei,treej,self.fenmu)
 						self.score = mt.score
-						
 						#self.tmp[(i,j)] = [mt.treePattern,str(trees[i])]
 						if abs(self.score- 1) <= self.yz:
 							mark[j] = 1
@@ -80,6 +81,7 @@ class singleFileParten:
 		return res
 		
 class matchTree:
+	''' 树匹配算法，返回模式 '''
 	def __init__(self,t1,t2,fenmu):
 		self.treePattern = ""
 		self.score = 0
@@ -108,10 +110,9 @@ class matchTree:
 						break
 			if t1.label() != 'ROOT':
 				self.treePattern = self.treePattern+')'
-		
-		
-		
+			
 class mulFilePattern:
+	''' 多文件模式匹配 '''
 	def __init__(self,files,yz = 0.8):
 		#file is a list
 		self.treePattern = ""
@@ -134,6 +135,7 @@ class mulFilePattern:
 		for i in range(0,len(files)):
 			for j in range(i+1,len(files)):
 				p = self.getTwoFilePattern(files[i],files[j])
+				print("*****************get*****************")
 				if len(p) > 0:
 					for sp in p:
 						tmp = []
@@ -184,45 +186,72 @@ class mulFilePattern:
 					p.append(wenjian)
 					res.append(p)
 		return res
+		
 class patternMatch:
+	''' 主类 '''
 	def __init__(self,yz=0.8):
 		self.yz = yz
 		self.res = []
-		if 'Pattern' not in os.listdir('.'):
-			os.mkdir('./Pattern')
-		with open('./Output/partition.txt') as partition:
+		if 'Pattern' not in os.listdir('./Data'):
+			os.mkdir('./Data/Pattern')
+		else:
+			#delete dir
+			if len(os.listdir('./Data/Pattern'))==0:
+				os.rmdir('./Data/Pattern')
+			else:
+				for file in os.listdir('./Data/Pattern'):
+					os.remove('./Data/Pattern/'+file);
+				os.rmdir('./Data/Pattern')
+			os.mkdir('./Data/Pattern')
+			
+		with open('./Data/output/partition.txt') as partition:
 			ps = [line for line in partition.readlines()]
+		ps = ["".join(p.split('\n')) for p in ps ]
 		self.ps = ps
-		self.dirnum = len(os.listdir('./Output'))-1
-		dirnames = ['./Output/output'+str(i) for i in range(1,self.dirnum+1)]
+		self.dirnum = len(os.listdir('./Data/output'))-1
+		dirnames = ['./Data/output/output'+str(i) for i in range(1,self.dirnum+1)]
 		for i in range(0,len(ps)):
 			tmp = [ps[i]]
-			filenames = [mdir+'/'+ps[i]+'.txt' for mdir in dirnames]
+			filenames = [mdir+'/'+ps[i]+'.json' for mdir in dirnames]
 			tmp.append(mulFilePattern(filenames,self.yz).res)
 			self.res.append(tmp)
 		self.__writeInFile()
-	def __writeInFile(self):
 		
-		for p in self.ps:
+	def __writeInFile(self):
+		'''for p in self.ps:
+			if p not in os.listdir('./Data/Pattern'):
+				os.mkdir('./Data/Pattern'+p)
 			i = 1
 			r = self.getResIn(p)
 			for rr in r:
-				with open('./Pattern/'+p+str(i)+'.soi','w') as file:
+				with open('./Data/Pattern/'+p+'/'+p+str(i)+'.soi','w') as file:
 					file.write(rr[0]+'\n')
 					for s in rr[1]:
-						file.write(s+'\n')
-				i = i+1
-						
+						file.write(s+'\n') '''
+		for p in self.ps:
+			res = dict()
+			res['partition_name'] = p;
+			r = self.getResIn(p)
+			res['patren_list']=[]
+			for rr in r:
+				patt = dict()
+				patt['pattern'] = rr[0]
+				patt['sentences'] = rr[1]
+				res['patren_list'].append(patt)
+			with open('./Data/Pattern/'+p+'.json','w') as file:
+				file.write(json.dumps(res))
 		
-	def gerRes(self):
+						
+	def getRes(self):
 		return self.res;
+		
 	def getResIn(self,p):
 		return [item[1] for item in self.res if item[0]==p][0]
 	
 			
 if __name__=='__main__':
-	res = patternMatch()
-	r = res.getResIn('text')
+	res = patternMatch(0.3)
+	r = res.getRes()
 	print(r)
 	
 	

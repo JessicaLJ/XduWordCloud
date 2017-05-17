@@ -1,4 +1,4 @@
-import sys
+import sys,json
 
 def getFilenames():
 	#get filename list
@@ -40,7 +40,9 @@ def getSents(filename):
 		return None	
 	with open(filename,encoding='UTF-8') as file:
 		if file is None:
-			print('cann\'t open file : '+filename)
+			print('can\'t open file : '+filename)
 			return None
-		res = [sent for sent in file.readlines()]
+		
+		res = [sent for sent in json.loads(file.readline())]
 	return 	res
+
